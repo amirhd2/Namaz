@@ -1,0 +1,1568 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>دستیار و مدیریت عبادات</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configure Tailwind dark mode strategy
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    <!-- Pop-up Modal Animations Style -->
+    <style>
+        @keyframes modalPopIn {
+            0% { opacity: 0; transform: scale(0.85) translateY(12px); }
+            70% { transform: scale(1.02) translateY(0); }
+            100% { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes modalPopOut {
+            0% { opacity: 1; transform: scale(1) translateY(0); }
+            100% { opacity: 0; transform: scale(0.55) translateY(25px); }
+        }
+        .animate-pop-in {
+            animation: modalPopIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-pop-out {
+            animation: modalPopOut 0.38s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+        }
+
+        @keyframes slideInRight {
+            0% { opacity: 0; transform: translateX(50px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideOutLeft {
+            0% { opacity: 1; transform: translateX(0); }
+            100% { opacity: 0; transform: translateX(-50px); }
+        }
+        @keyframes slideInLeft {
+            0% { opacity: 0; transform: translateX(-50px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes slideOutRight {
+            0% { opacity: 1; transform: translateX(0); }
+            100% { opacity: 0; transform: translateX(50px); }
+        }
+
+        .animate-slide-in-right {
+            animation: slideInRight 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-slide-out-left {
+            animation: slideOutLeft 0.22s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+        }
+        .animate-slide-in-left {
+            animation: slideInLeft 0.32s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .animate-slide-out-right {
+            animation: slideOutRight 0.22s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+        }
+
+        /* Hide native spinner arrows for number inputs to ensure perfect center alignment */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+            text-align: center;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 min-h-screen pb-16 selection:bg-emerald-500 selection:text-white transition-colors duration-300 overflow-x-hidden">
+
+    <!-- Main Content Container -->
+    <main class="max-w-4xl mx-auto px-4 pt-6 relative min-h-[80vh]">
+
+        <!-- ================= DASHBOARD GRID (4 CARDS) ================= -->
+        <section id="dashboard-view" class="space-y-6">
+            
+            <!-- Stat Dashboard (At a Glance Widget) -->
+            <div class="bg-gradient-to-br from-slate-100 via-emerald-50/40 to-slate-100 dark:from-slate-900 dark:via-emerald-950/20 dark:to-slate-900 border-2 border-emerald-500/20 dark:border-emerald-500/30 rounded-3xl p-5 sm:p-6 shadow-md dark:shadow-xl transition-colors duration-300 relative overflow-hidden">
+                <!-- Decorative background glow effect -->
+                <div class="absolute -top-10 -left-10 w-40 h-40 bg-emerald-500/10 dark:bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <!-- Header Row Inside Card -->
+                <div class="flex justify-between items-center mb-3 relative z-10">
+                    <span class="inline-flex items-center gap-1.5 text-xs font-black text-emerald-700 dark:text-emerald-300 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-full">
+                        📊 خلاصه عملکرد و آمار
+                    </span>
+                    <!-- Settings Gear Icon Button -->
+                    <button onclick="openModal('settings-modal')" title="تنظیمات برنامه" class="w-9 h-9 rounded-xl bg-white dark:bg-slate-800/90 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-center transition-all transform hover:rotate-45 active:scale-95">
+                        ⚙️
+                    </button>
+                </div>
+
+                <div class="flex flex-col items-center text-center space-y-3 relative z-10">
+                    <!-- Prominent Quick Stats Cards (Centered & Highlighted) -->
+                    <div id="quick-stats" class="grid grid-cols-2 gap-3 sm:gap-6 w-full max-w-lg pt-1">
+                        <!-- Stat Card 1: Namaz -->
+                        <div class="bg-white/90 dark:bg-slate-950/80 border-2 border-emerald-500/40 dark:border-emerald-500/40 rounded-2xl p-4 text-center shadow-lg hover:shadow-emerald-500/10 hover:border-emerald-500 transition-all transform hover:-translate-y-0.5 group">
+                            <div class="w-10 h-10 mx-auto rounded-xl bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl mb-2 group-hover:scale-110 transition-transform">
+                                🕌
+                            </div>
+                            <span class="block text-xs font-semibold text-slate-500 dark:text-slate-400">مجموع کل نماز قضا</span>
+                            <div class="mt-1 flex items-baseline justify-center gap-1">
+                                <span id="total-namaz-stat" class="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400">0</span>
+                                <span class="text-[10px] text-slate-400">نماز</span>
+                            </div>
+                        </div>
+
+                        <!-- Stat Card 2: Roozeh -->
+                        <div class="bg-white/90 dark:bg-slate-950/80 border-2 border-amber-500/40 dark:border-amber-500/40 rounded-2xl p-4 text-center shadow-lg hover:shadow-amber-500/10 hover:border-amber-500 transition-all transform hover:-translate-y-0.5 group">
+                            <div class="w-10 h-10 mx-auto rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl mb-2 group-hover:scale-110 transition-transform">
+                                🌙
+                            </div>
+                            <span class="block text-xs font-semibold text-slate-500 dark:text-slate-400">مجموع کل روزه قضا</span>
+                            <div class="mt-1 flex items-baseline justify-center gap-1">
+                                <span id="total-roozeh-stat" class="text-2xl sm:text-3xl font-black text-amber-600 dark:text-amber-400">0</span>
+                                <span class="text-[10px] text-slate-400">روز</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard 4 Cards (Horizontal Side-by-Side Layout) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <!-- CARD 1: NAMAZ (Daily + Ayat) -->
+                <div onclick="navigateTo('namaz-section')" class="bg-white dark:bg-gradient-to-br dark:from-emerald-950/40 dark:via-slate-900 dark:to-slate-900 border border-emerald-500/30 hover:border-emerald-500 dark:border-emerald-500/20 dark:hover:border-emerald-500/60 rounded-3xl p-5 sm:p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1 shadow-md dark:shadow-lg group flex flex-col justify-between">
+                    <!-- Top header row -->
+                    <div class="w-full flex justify-between items-center mb-3">
+                        <span class="text-[11px] bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/20 px-3 py-1 rounded-full font-medium">یومیه + آیات</span>
+                        <span class="text-xs text-emerald-600 dark:text-emerald-400 group-hover:translate-x-[-4px] transition-transform font-bold">←</span>
+                    </div>
+                    
+                    <!-- Content row: Icon on Right, Title & Description on Left -->
+                    <div class="flex items-center gap-4 text-right my-2">
+                        <!-- Icon (Right side) -->
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center text-3xl sm:text-4xl group-hover:scale-105 group-hover:bg-emerald-500/20 transition-all shrink-0 shadow-sm">
+                            🕌
+                        </div>
+                        <!-- Text Content (Left side) -->
+                        <div class="flex-1">
+                            <h3 class="text-3xl sm:text-4xl font-black text-center text-slate-800 dark:text-slate-100 group-hover:text-emerald-600 dark:group-hover:text-emerald-300 transition-colors leading-tight mb-1">
+                                نمازهای قضا
+                            </h3>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+                                ثبت و شمارش دقیق نمازهای قضای صبح، ظهر، عصر، مغرب، عشا و نماز آیات.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Footer Link -->
+                    <div class="w-full mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex justify-between items-center text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+                        <span>ورود به کارت نماز</span>
+                        <span class="group-hover:translate-x-[-4px] transition-transform">←</span>
+                    </div>
+                </div>
+
+                <!-- CARD 2: ROOZEH & FETRIYEH -->
+                <div onclick="navigateTo('roozeh-section')" class="bg-white dark:bg-gradient-to-br dark:from-amber-950/40 dark:via-slate-900 dark:to-slate-900 border border-amber-500/30 hover:border-amber-500 dark:border-amber-500/20 dark:hover:border-amber-500/60 rounded-3xl p-5 sm:p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1 shadow-md dark:shadow-lg group flex flex-col justify-between">
+                    <!-- Top header row -->
+                    <div class="w-full flex justify-between items-center mb-3">
+                        <span class="text-[11px] bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-500/20 px-3 py-1 rounded-full font-medium">قضا + فطریه</span>
+                        <span class="text-xs text-amber-600 dark:text-amber-400 group-hover:translate-x-[-4px] transition-transform font-bold">←</span>
+                    </div>
+
+                    <!-- Content row: Icon on Right, Title & Description on Left -->
+                    <div class="flex items-center gap-4 text-right my-2">
+                        <!-- Icon (Right side) -->
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 rounded-2xl flex items-center justify-center text-3xl sm:text-4xl group-hover:scale-105 group-hover:bg-amber-500/20 transition-all shrink-0 shadow-sm">
+                            🌙
+                        </div>
+                        <!-- Text Content (Left side) -->
+                        <div class="flex-1">
+                            <h3 class="text-3xl sm:text-4xl font-black text-center text-slate-800 dark:text-slate-100 group-hover:text-amber-600 dark:group-hover:text-amber-300 transition-colors leading-tight mb-1">
+                                روزه و فطریه
+                            </h3>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+                                ثبت تعداد روزه‌های قضا، محاسبه‌گر هوشمند مبلغ فطریه و سابقه پرداختی‌ها.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Footer Link -->
+                    <div class="w-full mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex justify-between items-center text-xs text-amber-600 dark:text-amber-400 font-bold">
+                        <span>ورود به کارت روزه</span>
+                        <span class="group-hover:translate-x-[-4px] transition-transform">←</span>
+                    </div>
+                </div>
+
+                <!-- CARD 3: ADIYEH -->
+                <div onclick="navigateTo('adiyeh-section')" class="bg-white dark:bg-gradient-to-br dark:from-indigo-950/40 dark:via-slate-900 dark:to-slate-900 border border-indigo-500/30 hover:border-indigo-500 dark:border-indigo-500/20 dark:hover:border-indigo-500/60 rounded-3xl p-5 sm:p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1 shadow-md dark:shadow-lg group flex flex-col justify-between">
+                    <!-- Top header row -->
+                    <div class="w-full flex justify-between items-center mb-3">
+                        <span class="text-[11px] bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border border-indigo-500/20 px-3 py-1 rounded-full font-medium">کارت‌های دو تکه</span>
+                        <span class="text-xs text-indigo-600 dark:text-indigo-400 group-hover:translate-x-[-4px] transition-transform font-bold">←</span>
+                    </div>
+
+                    <!-- Content row: Icon on Right, Title & Description on Left -->
+                    <div class="flex items-center gap-4 text-right my-2">
+                        <!-- Icon (Right side) -->
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center text-3xl sm:text-4xl group-hover:scale-105 group-hover:bg-indigo-500/20 transition-all shrink-0 shadow-sm">
+                            📖
+                        </div>
+                        <!-- Text Content (Left side) -->
+                        <div class="flex-1">
+                            <h3 class="text-3xl sm:text-4xl font-black text-center text-slate-800 dark:text-slate-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-300 transition-colors leading-tight mb-1">
+                                ادعیه و زیارات
+                            </h3>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+                                دفترچه ادعیه با ساختار دو رنگ (متن عربی با فونت قرآنی + ترجمه فارسی).
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Footer Link -->
+                    <div class="w-full mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex justify-between items-center text-xs text-indigo-600 dark:text-indigo-400 font-bold">
+                        <span>ورود به کارت ادعیه</span>
+                        <span class="group-hover:translate-x-[-4px] transition-transform">←</span>
+                    </div>
+                </div>
+
+                <!-- CARD 4: AHKAM & TUTORIALS -->
+                <div onclick="navigateTo('ahkam-section')" class="bg-white dark:bg-gradient-to-br dark:from-purple-950/40 dark:via-slate-900 dark:to-slate-900 border border-purple-500/30 hover:border-purple-500 dark:border-purple-500/20 dark:hover:border-purple-500/60 rounded-3xl p-5 sm:p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1 shadow-md dark:shadow-lg group flex flex-col justify-between">
+                    <!-- Top header row -->
+                    <div class="w-full flex justify-between items-center mb-3">
+                        <span class="text-[11px] bg-purple-500/10 text-purple-700 dark:text-purple-300 border border-purple-500/20 px-3 py-1 rounded-full font-medium">ثبت و ویرایش مطالب</span>
+                        <span class="text-xs text-purple-600 dark:text-purple-400 group-hover:translate-x-[-4px] transition-transform font-bold">←</span>
+                    </div>
+
+                    <!-- Content row: Icon on Right, Title & Description on Left -->
+                    <div class="flex items-center gap-4 text-right my-2">
+                        <!-- Icon (Right side) -->
+                        <div class="w-16 h-16 sm:w-20 sm:h-20 bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400 rounded-2xl flex items-center justify-center text-3xl sm:text-4xl group-hover:scale-105 group-hover:bg-purple-500/20 transition-all shrink-0 shadow-sm">
+                            💡
+                        </div>
+                        <!-- Text Content (Left side) -->
+                        <div class="flex-1">
+                            <h3 class="text-3xl sm:text-4xl font-black text-center text-slate-800 dark:text-slate-100 group-hover:text-purple-600 dark:group-hover:text-purple-300 transition-colors leading-tight mb-1">
+                                آموزش و احکام
+                            </h3>
+                            <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1.5 leading-relaxed">
+                                یادداشت مسائل شرعی، راهنمای نمازها و فتواهای شخصی با قابلیت ویرایش.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Footer Link -->
+                    <div class="w-full mt-4 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex justify-between items-center text-xs text-purple-600 dark:text-purple-400 font-bold">
+                        <span>ورود به کارت احکام</span>
+                        <span class="group-hover:translate-x-[-4px] transition-transform">←</span>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ================= SECTIONS DETAILS ================= -->
+
+        <!-- SECTION 1: NAMAZ -->
+        <section id="namaz-section" class="hidden space-y-6">
+            <div class="bg-white dark:bg-slate-900 border border-emerald-500/30 rounded-2xl p-5 sm:p-6 shadow-xl transition-colors duration-300">
+                <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4 mb-5">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-2xl">🕌</span>
+                        <h3 class="text-lg font-bold text-emerald-600 dark:text-emerald-400">کارت مدیریت نمازهای قضا</h3>
+                    </div>
+                    <button onclick="showDashboard()" class="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 px-3 py-1.5 rounded-xl text-slate-700 dark:text-slate-300 transition-all flex items-center gap-1">
+                        ➜ داشبورد
+                    </button>
+                </div>
+
+                <!-- Quick Add Buttons -->
+                <div class="bg-slate-50 dark:bg-slate-950/60 border border-slate-200 dark:border-slate-800 rounded-xl p-3 mb-5 flex flex-wrap items-center justify-between gap-2">
+                    <span class="text-xs text-slate-600 dark:text-slate-400 font-medium">افزایش سریع به تمام ۵ نماز یومیه:</span>
+                    <div class="flex gap-2">
+                        <button onclick="bulkAddNamaz(1)" class="text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/20 px-3 py-1 rounded-lg transition-all font-medium">+۱ روز (۵ نماز)</button>
+                    </div>
+                </div>
+
+                <!-- Namaz Counters Organized Structure (dir="ltr" applied to counters so - is Left, + is Right) -->
+                <div class="space-y-4">
+                    
+                    <!-- TOP: SOBH (نماز صبح - بالا) -->
+                    <div class="bg-slate-50 dark:bg-slate-950/80 border border-emerald-500/20 rounded-xl p-4 shadow-sm">
+                        <h4 class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mb-2 border-b border-slate-200 dark:border-slate-800/80 pb-1.5 text-center flex items-center justify-center gap-1.5">☀️ نماز صبح</h4>
+                        <div class="flex items-center justify-between">
+                            <span class="font-medium text-slate-700 dark:text-slate-200 text-sm">تعداد قضای صبح</span>
+                            <div class="flex items-center gap-2" dir="ltr">
+                                <button onclick="updateCounter('sobh', -1)" class="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 text-lg font-bold flex items-center justify-center transition-all">-</button>
+                                <input id="input-sobh" type="number" min="0" value="0" onchange="manualCounterChange('sobh', this.value)" class="w-16 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-center rounded-lg py-1 text-emerald-600 dark:text-emerald-300 font-bold text-sm focus:outline-none focus:border-emerald-500">
+                                <button onclick="updateCounter('sobh', 1)" class="w-9 h-9 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 text-lg font-bold flex items-center justify-center transition-all">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- MIDDLE ROW: ZOHR & ASR (Right) AND MAGHREB & ESHA (Left) -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        
+                        <!-- RIGHT BOX: ZOHR & ASR (ظهر و عصر) -->
+                        <div class="bg-slate-50 dark:bg-slate-950/80 border border-emerald-500/20 rounded-xl p-4 shadow-sm space-y-3">
+                            <h4 class="text-xs font-bold text-emerald-600 dark:text-emerald-400 border-b border-slate-200 dark:border-slate-800/80 pb-1.5 flex items-center justify-center gap-1.5 text-center">
+                                ☀️ نماز ظهر و عصر
+                            </h4>
+                            <div class="space-y-2.5">
+                                <!-- Inner Box 1: Zohr -->
+                                <div class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-lg p-3 flex items-center justify-between">
+                                    <span class="font-medium text-slate-700 dark:text-slate-200 text-sm">نماز ظهر</span>
+                                    <div class="flex items-center gap-2" dir="ltr">
+                                        <button onclick="updateCounter('zohr', -1)" class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 text-base font-bold flex items-center justify-center transition-all">-</button>
+                                        <input id="input-zohr" type="number" min="0" value="0" onchange="manualCounterChange('zohr', this.value)" class="w-16 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-center rounded-lg py-1 text-emerald-600 dark:text-emerald-300 font-bold text-sm focus:outline-none focus:border-emerald-500">
+                                        <button onclick="updateCounter('zohr', 1)" class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 text-base font-bold flex items-center justify-center transition-all">+</button>
+                                    </div>
+                                </div>
+                                <!-- Inner Box 2: Asr -->
+                                <div class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-lg p-3 flex items-center justify-between">
+                                    <span class="font-medium text-slate-700 dark:text-slate-200 text-sm">نماز عصر</span>
+                                    <div class="flex items-center gap-2" dir="ltr">
+                                        <button onclick="updateCounter('asr', -1)" class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 text-base font-bold flex items-center justify-center transition-all">-</button>
+                                        <input id="input-asr" type="number" min="0" value="0" onchange="manualCounterChange('asr', this.value)" class="w-16 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-center rounded-lg py-1 text-emerald-600 dark:text-emerald-300 font-bold text-sm focus:outline-none focus:border-emerald-500">
+                                        <button onclick="updateCounter('asr', 1)" class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 text-base font-bold flex items-center justify-center transition-all">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- LEFT BOX: MAGHREB & ESHA (مغرب و عشا) -->
+                        <div class="bg-slate-50 dark:bg-slate-950/80 border border-emerald-500/20 rounded-xl p-4 shadow-sm space-y-3">
+                            <h4 class="text-xs font-bold text-emerald-600 dark:text-emerald-400 border-b border-slate-200 dark:border-slate-800/80 pb-1.5 flex items-center justify-center gap-1.5 text-center">
+                                🌙 نماز مغرب و عشا
+                            </h4>
+                            <div class="space-y-2.5">
+                                <!-- Inner Box 1: Maghreb -->
+                                <div class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-lg p-3 flex items-center justify-between">
+                                    <span class="font-medium text-slate-700 dark:text-slate-200 text-sm">نماز مغرب</span>
+                                    <div class="flex items-center gap-2" dir="ltr">
+                                        <button onclick="updateCounter('maghreb', -1)" class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 text-base font-bold flex items-center justify-center transition-all">-</button>
+                                        <input id="input-maghreb" type="number" min="0" value="0" onchange="manualCounterChange('maghreb', this.value)" class="w-16 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-center rounded-lg py-1 text-emerald-600 dark:text-emerald-300 font-bold text-sm focus:outline-none focus:border-emerald-500">
+                                        <button onclick="updateCounter('maghreb', 1)" class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 text-base font-bold flex items-center justify-center transition-all">+</button>
+                                    </div>
+                                </div>
+                                <!-- Inner Box 2: Esha -->
+                                <div class="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-lg p-3 flex items-center justify-between">
+                                    <span class="font-medium text-slate-700 dark:text-slate-200 text-sm">نماز عشا</span>
+                                    <div class="flex items-center gap-2" dir="ltr">
+                                        <button onclick="updateCounter('esha', -1)" class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 text-base font-bold flex items-center justify-center transition-all">-</button>
+                                        <input id="input-esha" type="number" min="0" value="0" onchange="manualCounterChange('esha', this.value)" class="w-16 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-center rounded-lg py-1 text-emerald-600 dark:text-emerald-300 font-bold text-sm focus:outline-none focus:border-emerald-500">
+                                        <button onclick="updateCounter('esha', 1)" class="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 active:scale-95 text-base font-bold flex items-center justify-center transition-all">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- BOTTOM: AYAT (نماز آیات - پایین) -->
+                    <div class="bg-slate-50 dark:bg-slate-950/80 border border-teal-500/30 rounded-xl p-4 shadow-sm">
+                        <h4 class="text-xs font-bold text-teal-600 dark:text-teal-400 mb-2 border-b border-slate-200 dark:border-slate-800/80 pb-1.5 flex items-center justify-center gap-1 text-center">⚡ نماز آیات قضا</h4>
+                        <div class="flex items-center justify-between">
+                            <span class="font-medium text-slate-700 dark:text-slate-200 text-sm">تعداد قضای آیات</span>
+                            <div class="flex items-center gap-2" dir="ltr">
+                                <button onclick="updateCounter('ayat', -1)" class="w-9 h-9 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 hover:bg-teal-500/20 active:scale-95 text-lg font-bold flex items-center justify-center transition-all">-</button>
+                                <input id="input-ayat" type="number" min="0" value="0" onchange="manualCounterChange('ayat', this.value)" class="w-16 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-center rounded-lg py-1 text-teal-600 dark:text-teal-300 font-bold text-sm focus:outline-none focus:border-teal-500">
+                                <button onclick="updateCounter('ayat', 1)" class="w-9 h-9 rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 hover:bg-teal-500/20 active:scale-95 text-lg font-bold flex items-center justify-center transition-all">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: ROOZEH & FETRIYEH -->
+        <section id="roozeh-section" class="hidden space-y-6">
+            <div class="bg-white dark:bg-slate-900 border border-amber-500/30 rounded-2xl p-5 sm:p-6 shadow-xl transition-colors duration-300">
+                <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4 mb-5">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-2xl">🌙</span>
+                        <h3 class="text-lg font-bold text-amber-600 dark:text-amber-400">کارت مدیریت روزه و فطریه</h3>
+                    </div>
+                    <button onclick="showDashboard()" class="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 px-3 py-1.5 rounded-xl text-slate-700 dark:text-slate-300 transition-all flex items-center gap-1">
+                        ➜ داشبورد
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Roozeh Counter -->
+                    <div class="bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+                        <div>
+                            <h4 class="font-bold text-amber-600 dark:text-amber-300 text-sm mb-1 border-b border-slate-200 dark:border-slate-800 pb-2">ثبت روزه‌های قضا</h4>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 my-3">تعداد روزهایی که باید قضا بجا آورده شود را وارد یا کم/زیاد کنید:</p>
+                        </div>
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-slate-800/80">
+                            <span class="text-sm font-medium text-slate-700 dark:text-slate-200">تعداد روز قضا:</span>
+                            <div class="flex items-center gap-2" dir="ltr">
+                                <button onclick="updateCounter('roozeh', -1)" class="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 active:scale-95 text-lg font-bold flex items-center justify-center transition-all">-</button>
+                                <input id="input-roozeh" type="number" min="0" value="0" onchange="manualCounterChange('roozeh', this.value)" class="w-20 bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-center rounded-lg py-1.5 text-amber-600 dark:text-amber-300 font-bold text-sm focus:outline-none focus:border-amber-500">
+                                <button onclick="updateCounter('roozeh', 1)" class="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 active:scale-95 text-lg font-bold flex items-center justify-center transition-all">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Fetriyeh Calculator -->
+                    <div class="bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-xl p-4 space-y-3.5">
+                        <h4 class="font-bold text-amber-600 dark:text-amber-300 text-sm border-b border-slate-200 dark:border-slate-800 pb-2 flex items-center justify-between">
+                            <span>محاسبه‌گر فطریه سالانه</span>
+                            <span class="text-[10px] bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full font-bold">امسال ۱۴۰۵</span>
+                        </h4>
+                        
+                        <div class="space-y-3 text-xs">
+                            <!-- Count of Dependents with Namaz-style buttons -->
+                            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 flex items-center justify-between shadow-sm">
+                                <label class="text-slate-700 dark:text-slate-200 font-medium">تعداد افراد تحت تکفل:</label>
+                                <div class="flex items-center gap-2" dir="ltr">
+                                    <button onclick="updateFetriyehCount(-1)" class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 active:scale-95 text-base font-bold flex items-center justify-center transition-all">-</button>
+                                    <input id="fetriyeh-count" type="number" min="1" value="1" oninput="calculateFetriyeh()" class="w-16 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-center rounded-lg py-1 text-amber-600 dark:text-amber-300 font-bold text-sm focus:outline-none focus:border-amber-500">
+                                    <button onclick="updateFetriyehCount(1)" class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 active:scale-95 text-base font-bold flex items-center justify-center transition-all">+</button>
+                                </div>
+                            </div>
+
+                            <!-- Rate per Person with Namaz-style buttons -->
+                            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 flex items-center justify-between shadow-sm">
+                                <label class="text-slate-700 dark:text-slate-200 font-medium">سرانه هر نفر (تومان):</label>
+                                <div class="flex items-center gap-2" dir="ltr">
+                                    <button onclick="updateFetriyehRate(-5000)" class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 active:scale-95 text-base font-bold flex items-center justify-center transition-all">-</button>
+                                    <input id="fetriyeh-rate" type="number" step="5000" min="0" value="80000" oninput="calculateFetriyeh()" class="w-24 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 text-center rounded-lg py-1 text-amber-600 dark:text-amber-300 font-bold text-sm focus:outline-none focus:border-amber-500">
+                                    <button onclick="updateFetriyehRate(5000)" class="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20 hover:bg-amber-500/20 active:scale-95 text-base font-bold flex items-center justify-center transition-all">+</button>
+                                </div>
+                            </div>
+
+                            <!-- Payment Date Selection trigger -->
+                            <div class="bg-amber-500/5 dark:bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 flex items-center justify-between">
+                                <div class="flex items-center gap-1.5 text-slate-700 dark:text-slate-300 font-medium">
+                                    <span>📅 تاریخ پرداخت:</span>
+                                    <span id="selected-payment-date" class="font-bold text-amber-600 dark:text-amber-400 font-mono text-sm">۱۴۰۵/۱۲/۰۲</span>
+                                </div>
+                                <button onclick="openIosDatePicker()" class="bg-white dark:bg-slate-800 hover:bg-amber-50 dark:hover:bg-slate-700 border border-amber-500/30 text-amber-700 dark:text-amber-300 px-3 py-1.5 rounded-lg text-[11px] font-bold shadow-sm transition-all flex items-center gap-1 active:scale-95">
+                                    📱 انتخاب تاریخ (iOS)
+                                </button>
+                            </div>
+
+                            <div class="pt-2 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center font-bold text-sm">
+                                <span class="text-slate-700 dark:text-slate-300">مبلغ کل فطریه:</span>
+                                <span id="fetriyeh-total-text" class="text-amber-600 dark:text-amber-400 text-base font-black">۸۰,۰۰۰ تومان</span>
+                            </div>
+
+                            <button onclick="recordFetriyehPayment()" class="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white shadow-md shadow-amber-900/20 rounded-xl py-2.5 font-bold transition-all active:scale-98 text-xs flex items-center justify-center gap-1.5">
+                                🧾 ثبت و صدور رسید پرداخت
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fetriyeh History Table (Full Receipt Cards) -->
+                <div class="mt-6 pt-5 border-t border-slate-200 dark:border-slate-800">
+                    <div class="flex justify-between items-center mb-4">
+                        <h4 class="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-2">
+                            <span>🧾 سوابق و رسیدهای پرداخت فطریه</span>
+                        </h4>
+                        <span id="receipt-count-badge" class="text-[11px] bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700 px-2.5 py-0.5 rounded-full font-medium">۰ رسید ثبت‌شده</span>
+                    </div>
+                    <div id="fetriyeh-history-list" class="space-y-4 max-h-[500px] overflow-y-auto pr-1">
+                        <!-- Items rendered via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: ADIYEH (Two-Tone Cards) -->
+        <section id="adiyeh-section" class="hidden space-y-6">
+            <div class="bg-white dark:bg-slate-900 border border-indigo-500/30 rounded-2xl p-5 sm:p-6 shadow-xl transition-colors duration-300">
+                <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4 mb-5">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-2xl">📖</span>
+                        <h3 class="text-lg font-bold text-indigo-600 dark:text-indigo-400">کارت ادعیه و زیارات</h3>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="openModal('dua-modal')" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-xl font-medium transition-all shadow-md shadow-indigo-900/30 flex items-center gap-1">
+                            ➕ ثبت دعای جدید
+                        </button>
+                        <button onclick="showDashboard()" class="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 px-3 py-1.5 rounded-xl text-slate-700 dark:text-slate-300 transition-all flex items-center gap-1">
+                            ➜ داشبورد
+                        </button>
+                    </div>
+                </div>
+
+                <!-- List of Two-Tone Cards -->
+                <div id="dua-cards-container" class="space-y-5">
+                    <!-- Dynamic cards injected via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 4: AHKAM & TUTORIALS -->
+        <section id="ahkam-section" class="hidden space-y-6">
+            <div class="bg-white dark:bg-slate-900 border border-purple-500/30 rounded-2xl p-5 sm:p-6 shadow-xl transition-colors duration-300">
+                <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-4 mb-5">
+                    <div class="flex items-center gap-2.5">
+                        <span class="text-2xl">💡</span>
+                        <h3 class="text-lg font-bold text-purple-600 dark:text-purple-400">کارت آموزش و احکام شرعی</h3>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="openAhkamModal()" class="text-xs bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-xl font-medium transition-all shadow-md shadow-purple-900/30 flex items-center gap-1">
+                            ➕ ثبت مطلب جدید
+                        </button>
+                        <button onclick="showDashboard()" class="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 px-3 py-1.5 rounded-xl text-slate-700 dark:text-slate-300 transition-all flex items-center gap-1">
+                            ➜ داشبورد
+                        </button>
+                    </div>
+                </div>
+
+                <!-- List of Ahkam Items -->
+                <div id="ahkam-cards-container" class="space-y-3.5">
+                    <!-- Dynamic cards injected via JS -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ================= MODALS ================= -->
+
+    <!-- MODAL: iOS STYLE DATE PICKER -->
+    <div id="ios-date-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white dark:bg-slate-900 border-t sm:border border-slate-300 dark:border-slate-800 rounded-t-3xl sm:rounded-3xl p-5 w-full max-w-md space-y-4 shadow-2xl transition-all">
+            <!-- iOS Picker Header -->
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
+                <button onclick="closeModal('ios-date-modal')" class="text-xs text-rose-500 hover:text-rose-600 font-bold px-2 py-1">انصراف</button>
+                <span class="font-bold text-slate-800 dark:text-slate-100 text-sm flex items-center gap-1.5">
+                    📱 انتخاب تاریخ پرداخت (iOS)
+                </span>
+                <button onclick="confirmIosDate()" class="text-xs text-amber-600 dark:text-amber-400 hover:text-amber-500 font-black bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-500/20">تأیید</button>
+            </div>
+
+            <!-- iOS Wheel Selectors Container -->
+            <div class="relative py-4 bg-slate-100/70 dark:bg-slate-950/90 rounded-2xl border border-slate-200 dark:border-slate-800">
+                <!-- Selection Highlight Bar in Middle -->
+                <div class="pointer-events-none absolute inset-x-2 top-1/2 -translate-y-1/2 h-10 border-y-2 border-amber-500/50 bg-amber-500/10 rounded-lg shadow-inner z-10"></div>
+                
+                <div class="grid grid-cols-3 text-center relative z-0 px-2 gap-2">
+                    <!-- Day Wheel Column -->
+                    <div class="flex flex-col items-center">
+                        <span class="text-[10px] text-slate-400 mb-1 font-bold">روز</span>
+                        <select id="ios-picker-day" class="w-full text-center bg-transparent text-slate-800 dark:text-slate-100 font-bold text-base py-2 focus:outline-none cursor-pointer">
+                            <!-- Populated dynamically 1 to 31 -->
+                        </select>
+                    </div>
+
+                    <!-- Month Wheel Column -->
+                    <div class="flex flex-col items-center border-x border-slate-200 dark:border-slate-800/80 px-1">
+                        <span class="text-[10px] text-slate-400 mb-1 font-bold">ماه</span>
+                        <select id="ios-picker-month" class="w-full text-center bg-transparent text-slate-800 dark:text-slate-100 font-bold text-sm py-2 focus:outline-none cursor-pointer">
+                            <!-- Populated dynamically Persian Months -->
+                        </select>
+                    </div>
+
+                    <!-- Year Wheel Column -->
+                    <div class="flex flex-col items-center">
+                        <span class="text-[10px] text-slate-400 mb-1 font-bold">سال</span>
+                        <select id="ios-picker-year" class="w-full text-center bg-transparent text-slate-800 dark:text-slate-100 font-bold text-base py-2 focus:outline-none cursor-pointer">
+                            <!-- Populated dynamically -->
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Preset Shortcuts -->
+            <div class="flex gap-2 text-xs">
+                <button onclick="setIosPickerToday()" class="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-amber-500/10 text-slate-700 dark:text-slate-300 py-2.5 rounded-xl font-bold transition-colors border border-slate-200 dark:border-slate-700 flex items-center justify-center gap-1">
+                    📅 تنظیم سریع روی امروز
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: SETTINGS (⚙️ تنظیمات برنامه) -->
+    <div id="settings-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-3xl p-5 sm:p-6 w-full max-w-md space-y-5 shadow-2xl transition-all">
+            <!-- Header -->
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
+                <div class="flex items-center gap-2">
+                    <span class="text-xl">⚙️</span>
+                    <h3 class="font-bold text-slate-800 dark:text-slate-100 text-base">تنظیمات برنامه</h3>
+                </div>
+                <button onclick="closeModal('settings-modal')" class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition-colors">✕</button>
+            </div>
+
+            <div class="space-y-4 max-h-[70vh] overflow-y-auto pr-1">
+                
+                <!-- Section 1: Version & Updates -->
+                <div class="bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-2.5">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                            📱 نسخه برنامه
+                        </span>
+                        <span class="text-xs font-mono font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 px-2.5 py-0.5 rounded-full">v1.2.0</span>
+                    </div>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400">آخرین بروزرسانی: مرداد ۱۴۰۵ (نسخه پایدار)</p>
+                    <button onclick="checkAppUpdates()" class="w-full bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl py-2 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+                        🔄 بررسی بروزرسانی جدید
+                    </button>
+                </div>
+
+                <!-- Section 2: Appearance / Theme Switcher -->
+                <div class="bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-3">
+                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                        🎨 ظاهر برنامه (تم)
+                    </span>
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="setTheme('light')" id="theme-btn-light" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs text-center font-medium transition-all flex flex-col items-center gap-1 hover:border-emerald-500">
+                            <span class="text-lg">☀️</span>
+                            <span class="text-slate-700 dark:text-slate-300">روشن</span>
+                        </button>
+                        <button onclick="setTheme('dark')" id="theme-btn-dark" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs text-center font-medium transition-all flex flex-col items-center gap-1 hover:border-emerald-500">
+                            <span class="text-lg">🌙</span>
+                            <span class="text-slate-700 dark:text-slate-300">تاریک</span>
+                        </button>
+                        <button onclick="setTheme('system')" id="theme-btn-system" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs text-center font-medium transition-all flex flex-col items-center gap-1 hover:border-emerald-500">
+                            <span class="text-lg">💻</span>
+                            <span class="text-slate-700 dark:text-slate-300">سیستم</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Section 3: Backup & Restore -->
+                <div class="bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-3">
+                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300 block">
+                        💾 پشتیبان‌گیری و بازیابی اطلاعات
+                    </span>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button onclick="exportData()" class="bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl py-2.5 text-xs font-medium transition-colors flex items-center justify-center gap-1.5 shadow-md shadow-emerald-900/20">
+                            💾 دانلود پشتیبان
+                        </button>
+                        <label class="bg-white dark:bg-slate-900 hover:bg-slate-100 dark:hover:bg-slate-800 border border-slate-300 dark:border-slate-700 text-slate-700 dark:text-slate-300 rounded-xl py-2.5 text-xs font-medium transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-sm text-center">
+                            📂 بازیابی فایل
+                            <input type="file" accept=".json" class="hidden" onchange="importData(event)">
+                        </label>
+                    </div>
+                    <!-- Red Reset Button for Clearing All Data -->
+                    <button onclick="promptResetAllData()" class="w-full bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-600 dark:text-rose-400 rounded-xl py-2.5 text-xs font-bold transition-all flex items-center justify-center gap-1.5 mt-2 active:scale-98">
+                        🗑️ پاکسازی و حذف کامل اطلاعات
+                    </button>
+                </div>
+
+                <!-- Section 4: About App -->
+                <div class="bg-slate-50 dark:bg-slate-950/80 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-2">
+                    <span class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+                        ℹ️ درباره دستیار عبادات
+                    </span>
+                    <p class="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                        این نرم‌افزار به صورت آفلاین و بدون نیاز به اینترنت، اطلاعات مربوط به عبادات، تکالیف قضاشده، ادعیه و احکام شخصی شما را صرفاً در مرورگر خودتان ذخیره می‌کند.
+                    </p>
+                </div>
+
+            </div>
+
+            <div class="pt-2 border-t border-slate-200 dark:border-slate-800">
+                <button onclick="closeModal('settings-modal')" class="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-2.5 rounded-xl font-medium text-xs transition-colors">
+                    بستن
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: RESET CONFIRMATION -->
+    <div id="reset-confirm-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 border border-rose-500/40 rounded-3xl p-5 sm:p-6 w-full max-w-md space-y-4 shadow-2xl transition-all">
+            <div class="flex items-center gap-3 text-rose-600 dark:text-rose-400">
+                <div class="w-10 h-10 rounded-2xl bg-rose-500/10 flex items-center justify-center text-xl shrink-0">⚠️</div>
+                <h3 class="font-bold text-base">تأیید پاکسازی کامل اطلاعات</h3>
+            </div>
+            <p class="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                آیا از حذف کامل تمامی اطلاعات، نمازها، روزه‌ها، ادعیه و احکام ثبت‌شده اطمینان دارید؟ <span class="text-rose-600 dark:text-rose-400 font-bold block mt-1">این عمل غیرقابل بازگشت است!</span>
+            </p>
+            <div class="flex gap-2 pt-2">
+                <button onclick="closeModal('reset-confirm-modal')" class="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-2.5 rounded-xl text-xs font-bold transition-all">
+                    انصراف
+                </button>
+                <button onclick="executeResetAllData()" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-md shadow-rose-900/30">
+                    بله، پاکسازی شود
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 1: ADD DUA (3 Input Items) -->
+    <div id="dua-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 border border-indigo-500/40 rounded-2xl p-5 sm:p-6 w-full max-w-lg space-y-4 shadow-2xl transition-all">
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
+                <h3 class="font-bold text-indigo-600 dark:text-indigo-400 text-base">ثبت دعای جدید (کارت دو تکه)</h3>
+                <button onclick="closeModal('dua-modal')" class="text-slate-400 hover:text-slate-700 dark:hover:text-white">✕</button>
+            </div>
+            
+            <form id="dua-form" onsubmit="handleSaveDua(event)" class="space-y-3.5 text-xs">
+                <div>
+                    <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">آیتم ۱: عنوان دعا / زیارت</label>
+                    <input type="text" id="dua-title" required placeholder="مثلاً: دعای فرج، زیارت عاشورا..." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500">
+                </div>
+                <div>
+                    <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">آیتم ۲: متن عربی (تکه بالایی کارت)</label>
+                    <textarea id="dua-arabic" required rows="3" placeholder="متن عربی را همراه با اعراب وارد کنید..." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 text-sm leading-loose focus:outline-none focus:border-indigo-500"></textarea>
+                </div>
+                <div>
+                    <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">آیتم ۳: متن فارسی / ترجمه (تکه پایینی کارت)</label>
+                    <textarea id="dua-persian" rows="3" placeholder="ترجمه فارسی دعا را وارد کنید..." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500"></textarea>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeModal('dua-modal')" class="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-2.5 rounded-xl font-medium transition-all">انصراف</button>
+                    <button type="submit" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl font-medium transition-all">ذخیره دعا</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: AHKAM (Add & Edit) -->
+    <div id="ahkam-modal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 border border-purple-500/40 rounded-2xl p-5 sm:p-6 w-full max-w-lg space-y-4 shadow-2xl transition-all">
+            <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3">
+                <h3 id="ahkam-modal-title" class="font-bold text-purple-600 dark:text-purple-400 text-base">ثبت / ویرایش حکم شرعی</h3>
+                <button onclick="closeModal('ahkam-modal')" class="text-slate-400 hover:text-slate-700 dark:hover:text-white">✕</button>
+            </div>
+            
+            <form id="ahkam-form" onsubmit="handleSaveAhkam(event)" class="space-y-3.5 text-xs">
+                <input type="hidden" id="ahkam-id">
+                <div>
+                    <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">عنوان موضوع یا مسئله</label>
+                    <input type="text" id="ahkam-title" required placeholder="مثلاً: نحوه خواندن نماز آیات، فتوا درباره روزه بیمار..." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-purple-500">
+                </div>
+                <div>
+                    <label class="block text-slate-700 dark:text-slate-300 font-medium mb-1">شرح حکم / فتوا / آموزش</label>
+                    <textarea id="ahkam-content" required rows="5" placeholder="شرح کامل مسئله یا فتوا را بگذارید..." class="w-full bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl p-2.5 text-slate-800 dark:text-slate-100 focus:outline-none focus:border-purple-500"></textarea>
+                </div>
+
+                <div class="flex gap-2 pt-2">
+                    <button type="button" onclick="closeModal('ahkam-modal')" class="flex-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-2.5 rounded-xl font-medium transition-all">انصراف</button>
+                    <button type="submit" class="flex-1 bg-purple-600 hover:bg-purple-500 text-white py-2.5 rounded-xl font-medium transition-all">ذخیره مطلب</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 left-4 sm:left-auto sm:w-80 bg-slate-800 dark:bg-slate-800 border border-emerald-500/50 text-emerald-300 p-3 rounded-xl shadow-xl text-xs font-medium translate-y-20 opacity-0 transition-all duration-300 z-50 pointer-events-none flex items-center gap-2">
+        <span>✅</span>
+        <span id="toast-message">عملیات با موفقیت انجام شد.</span>
+    </div>
+
+    <!-- ================= JAVASCRIPT LOGIC ================= -->
+    <script>
+        const DEFAULT_STATE = {
+            theme: 'system', // 'system' | 'light' | 'dark'
+            namaz: { sobh: 0, zohr: 0, asr: 0, maghreb: 0, esha: 0, ayat: 0 },
+            roozeh: 0,
+            fetriyehHistory: [
+                { id: 1, receiptNo: 'FTR-1405-9823', year: '۱۴۰۵', count: 3, rate: 80000, total: 240000, date: '1405/12/02' }
+            ],
+            duas: [
+                {
+                    id: 1,
+                    title: 'دعای فرج (إِلَهِي عَظُمَ الْبَلاءُ)',
+                    arabic: 'إِلَهِي عَظُمَ الْبَلاءُ وَ بَرِحَ الْخَفَاءُ وَ انْكشَفَ الْغِطَاءُ وَ انْقَطَعَ الرَّجَاءُ وَ ضَاقَتِ الْأَرْضُ وَ مُنِعَتِ السَّمَاءُ وَ أَنْتَ الْمُسْتَعَانُ وَ إِلَيْك الْمُشْتَكَى وَ عَلَيْك الْمُعَوَّلُ فِي الشِّدَّةِ وَ الرَّخَاءِ...',
+                    persian: 'خدایا! بلا و گرفتاری بزرگ شد و پنهانی‌ها آشکار گشت و پرده برچیده شد و امید ناامید شد و زمین تنگ آمد و آسمان دریغ ورزید و تو یاور هستی و شکایت به سوی توست...'
+                }
+            ],
+            ahkam: [
+                {
+                    id: 1,
+                    title: 'طریقه خواندن نماز آیات',
+                    content: 'نماز آیات دو رکعت است و در هر رکعت پنج رکوع دارد. دستور ساده: بعد از نیت و تکبیر، سوره حمد و یک سوره کامل (مثلاً توحید) به ۵ قسمت تقسیم شده و بعد از هر آیه یک رکوع انجام می‌شود تا ۵ رکوع کامل گردد.'
+                }
+            ]
+        };
+
+        let appState = loadState();
+        let selectedFetriyehDate = getTodayShamsiDate();
+
+        // Helper function to get current Shamsi Persian Date string YYYY/MM/DD
+        function getTodayShamsiDate() {
+            try {
+                const now = new Date();
+                const formatter = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                });
+                const parts = formatter.formatToParts(now);
+                let year = parts.find(p => p.type === 'year')?.value || '1405';
+                let month = parts.find(p => p.type === 'month')?.value || '05';
+                let day = parts.find(p => p.type === 'day')?.value || '11';
+                
+                year = toEnglishDigits(year);
+                month = toEnglishDigits(month).padStart(2, '0');
+                day = toEnglishDigits(day).padStart(2, '0');
+                
+                return `${year}/${month}/${day}`;
+            } catch (e) {
+                return "1405/12/02";
+            }
+        }
+
+        function toEnglishDigits(str) {
+            const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+            return String(str).replace(/[۰-۹]/g, w => persianDigits.indexOf(w));
+        }
+
+        function toPersianDigits(str) {
+            const persianDigits = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+            return String(str).replace(/\d/g, w => persianDigits[parseInt(w)]);
+        }
+
+        // --- THEME MANAGEMENT ---
+        function setTheme(themeMode) {
+            appState.theme = themeMode;
+            saveState();
+            applyTheme();
+        }
+
+        function applyTheme() {
+            const currentTheme = appState.theme || 'system';
+            const isDarkSystem = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const shouldBeDark = currentTheme === 'dark' || (currentTheme === 'system' && isDarkSystem);
+
+            if (shouldBeDark) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+
+            // Update button styles inside settings modal
+            ['light', 'dark', 'system'].forEach(t => {
+                const btn = document.getElementById(`theme-btn-${t}`);
+                if (btn) {
+                    if (t === currentTheme) {
+                        btn.className = "p-2.5 rounded-xl border-2 border-emerald-500 bg-emerald-500/10 text-xs text-center font-bold transition-all flex flex-col items-center gap-1 text-emerald-600 dark:text-emerald-400";
+                    } else {
+                        btn.className = "p-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs text-center font-medium transition-all flex flex-col items-center gap-1 hover:border-emerald-500 text-slate-700 dark:text-slate-300";
+                    }
+                }
+            });
+        }
+
+        function checkAppUpdates() {
+            showToast('شما از آخرین نسخه برنامه (v1.2.0) استفاده می‌کنید.');
+        }
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            if (appState.theme === 'system') {
+                applyTheme();
+            }
+        });
+
+        // --- LOCAL STORAGE FUNCTIONS ---
+        function loadState() {
+            const saved = localStorage.getItem('ebadat_app_data');
+            if (saved) {
+                try { return JSON.parse(saved); } catch (e) { console.error(e); }
+            }
+            return JSON.parse(JSON.stringify(DEFAULT_STATE));
+        }
+
+        function saveState() {
+            localStorage.setItem('ebadat_app_data', JSON.stringify(appState));
+            updateDashboardStats();
+        }
+
+        let currentSectionId = 'dashboard-view';
+        let isTransitioning = false;
+
+        function navigateTo(targetId, isBack = false) {
+            if (isTransitioning || targetId === currentSectionId) return;
+
+            const currentEl = document.getElementById(currentSectionId);
+            const targetEl = document.getElementById(targetId);
+
+            if (!currentEl || !targetEl) return;
+
+            isTransitioning = true;
+
+            const exitClass = isBack ? 'animate-slide-out-right' : 'animate-slide-out-left';
+            const enterClass = isBack ? 'animate-slide-in-left' : 'animate-slide-in-right';
+
+            // Play exit animation on current view
+            currentEl.classList.add(exitClass);
+
+            setTimeout(() => {
+                currentEl.classList.add('hidden');
+                currentEl.classList.remove(exitClass);
+
+                targetEl.classList.remove('hidden');
+                targetEl.classList.add(enterClass);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                setTimeout(() => {
+                    targetEl.classList.remove(enterClass);
+                    currentSectionId = targetId;
+                    isTransitioning = false;
+                }, 320);
+            }, 210);
+        }
+
+        function showDashboard() {
+            navigateTo('dashboard-view', true);
+        }
+
+        let touchStartX = 0;
+        let touchStartY = 0;
+        let currentDeltaX = 0;
+        let isSwipeActive = false;
+        let isHorizontalTracking = false;
+        let isPointerDown = false;
+        let currentSecEl = null;
+        let dashEl = null;
+        let swipeOverlay = null;
+
+        function initSwipeBackGesture() {
+            // Create a backdrop shadow overlay dynamically if not exists
+            if (!document.getElementById('ios-swipe-overlay')) {
+                swipeOverlay = document.createElement('div');
+                swipeOverlay.id = 'ios-swipe-overlay';
+                swipeOverlay.className = 'fixed inset-0 bg-black/40 z-30 pointer-events-none opacity-0 transition-opacity duration-75 hidden';
+                document.body.appendChild(swipeOverlay);
+            } else {
+                swipeOverlay = document.getElementById('ios-swipe-overlay');
+            }
+
+            // Listen to unified Pointer Events (Works for both Touch & Mouse drag)
+            document.addEventListener('pointerdown', handlePointerStart);
+            document.addEventListener('pointermove', handlePointerMove);
+            document.addEventListener('pointerup', handlePointerEnd);
+            document.addEventListener('pointercancel', handlePointerEnd);
+        }
+
+        function handlePointerStart(e) {
+            if (isTransitioning || currentSectionId === 'dashboard-view') return;
+            // For mouse interaction, only respond to primary left click
+            if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+            touchStartX = e.clientX;
+            touchStartY = e.clientY;
+            
+            // Allow swipe back gesture when touch/click originates near left side (first 40% of viewport)
+            if (touchStartX > window.innerWidth * 0.4) return;
+
+            currentSecEl = document.getElementById(currentSectionId);
+            dashEl = document.getElementById('dashboard-view');
+            
+            if (!currentSecEl || !dashEl) return;
+
+            isPointerDown = true;
+            isSwipeActive = false;
+            isHorizontalTracking = false;
+            currentDeltaX = 0;
+        }
+
+        function handlePointerMove(e) {
+            if (!isPointerDown || isTransitioning || currentSectionId === 'dashboard-view' || !currentSecEl) return;
+            
+            // Check if left mouse button is released outside window
+            if (e.pointerType === 'mouse' && e.buttons !== 1) {
+                handlePointerEnd();
+                return;
+            }
+
+            const deltaX = e.clientX - touchStartX;
+            const deltaY = e.clientY - touchStartY;
+
+            // Detect horizontal swipe right gesture
+            if (!isHorizontalTracking && !isSwipeActive) {
+                if (Math.abs(deltaX) > 8 || Math.abs(deltaY) > 8) {
+                    if (deltaX > 0 && Math.abs(deltaX) > Math.abs(deltaY) * 1.2) {
+                        isHorizontalTracking = true;
+                        isSwipeActive = true;
+                    } else {
+                        isPointerDown = false;
+                        currentSecEl = null;
+                        return;
+                    }
+                }
+            }
+
+            if (isSwipeActive && deltaX > 0) {
+                if (e.cancelable) e.preventDefault();
+                currentDeltaX = deltaX;
+                
+                const screenWidth = window.innerWidth;
+                const progress = Math.min(Math.max(deltaX / screenWidth, 0), 1);
+
+                // Setup container styles for live interactive preview
+                if (!swipeOverlay.classList.contains('active-drag')) {
+                    swipeOverlay.classList.add('active-drag');
+                    swipeOverlay.classList.remove('hidden');
+
+                    // Prevent text selection during mouse drag
+                    document.body.classList.add('select-none');
+
+                    // Make previous screen (dashboard) visible underneath in normal flow
+                    dashEl.classList.remove('hidden');
+                    dashEl.style.pointerEvents = 'none';
+                    dashEl.style.willChange = 'transform, opacity';
+
+                    // Prepare active sub-section for sliding on top absolutely within <main>
+                    currentSecEl.style.position = 'absolute';
+                    currentSecEl.style.top = '0';
+                    currentSecEl.style.left = '0';
+                    currentSecEl.style.right = '0';
+                    currentSecEl.style.width = '100%';
+                    currentSecEl.style.zIndex = '40';
+                    currentSecEl.style.willChange = 'transform';
+
+                    if (currentSecEl.firstElementChild) {
+                        currentSecEl.firstElementChild.style.boxShadow = '-12px 10px 30px rgba(0,0,0,0.2)';
+                    }
+                }
+
+                // Smooth dynamics preview update using rAF
+                requestAnimationFrame(() => {
+                    if (!isSwipeActive) return;
+                    currentSecEl.style.transform = `translateX(${deltaX}px)`;
+                    dashEl.style.transform = `translateX(${-15 + (progress * 15)}%)`;
+                    dashEl.style.opacity = `${0.8 + (progress * 0.2)}`;
+                    swipeOverlay.style.opacity = `${0.3 * (1 - progress)}`;
+                });
+            }
+        }
+
+        function handlePointerEnd() {
+            if (!isPointerDown) return;
+            isPointerDown = false;
+
+            document.body.classList.remove('select-none');
+
+            if (!isSwipeActive || !currentSecEl || !dashEl) return;
+            isSwipeActive = false;
+            isHorizontalTracking = false;
+
+            const screenWidth = window.innerWidth;
+            const threshold = screenWidth * 0.22; // 22% swipe threshold to trigger back
+
+            swipeOverlay.classList.remove('active-drag');
+
+            currentSecEl.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1)';
+            dashEl.style.transition = 'transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease';
+            swipeOverlay.style.transition = 'opacity 0.25s ease';
+
+            if (currentDeltaX > threshold) {
+                // Complete swipe back to dashboard
+                currentSecEl.style.transform = `translateX(${screenWidth}px)`;
+                dashEl.style.transform = 'translateX(0px)';
+                dashEl.style.opacity = '1';
+                swipeOverlay.style.opacity = '0';
+
+                setTimeout(() => {
+                    // Clean up inline styles - dashboard stays seamlessly in place with zero jump
+                    currentSecEl.classList.add('hidden');
+                    currentSecEl.removeAttribute('style');
+                    if (currentSecEl.firstElementChild) {
+                        currentSecEl.firstElementChild.style.boxShadow = '';
+                    }
+
+                    dashEl.removeAttribute('style');
+
+                    swipeOverlay.classList.add('hidden');
+                    swipeOverlay.removeAttribute('style');
+
+                    currentSectionId = 'dashboard-view';
+                    window.scrollTo({ top: 0, behavior: 'instant' });
+                }, 250);
+            } else {
+                // Cancel swipe - spring back to current section
+                currentSecEl.style.transform = 'translateX(0px)';
+                dashEl.style.transform = 'translateX(-15%)';
+                dashEl.style.opacity = '0.8';
+                swipeOverlay.style.opacity = '0.3';
+
+                setTimeout(() => {
+                    currentSecEl.removeAttribute('style');
+                    if (currentSecEl.firstElementChild) {
+                        currentSecEl.firstElementChild.style.boxShadow = '';
+                    }
+
+                    dashEl.classList.add('hidden');
+                    dashEl.removeAttribute('style');
+
+                    swipeOverlay.classList.add('hidden');
+                    swipeOverlay.removeAttribute('style');
+                }, 250);
+            }
+        }
+
+        // --- NAMAZ LOGIC ---
+        function renderNamazUI() {
+            Object.keys(appState.namaz).forEach(key => {
+                const input = document.getElementById(`input-${key}`);
+                if (input) input.value = appState.namaz[key];
+            });
+        }
+
+        function updateCounter(key, delta) {
+            let current = appState.namaz[key] !== undefined ? appState.namaz[key] : (key === 'roozeh' ? appState.roozeh : 0);
+            let updated = Math.max(0, current + delta);
+            
+            if (key === 'roozeh') {
+                appState.roozeh = updated;
+                document.getElementById('input-roozeh').value = updated;
+            } else {
+                appState.namaz[key] = updated;
+                document.getElementById(`input-${key}`).value = updated;
+            }
+            saveState();
+        }
+
+        function manualCounterChange(key, value) {
+            let parsed = parseInt(value) || 0;
+            parsed = Math.max(0, parsed);
+            
+            if (key === 'roozeh') {
+                appState.roozeh = parsed;
+            } else {
+                appState.namaz[key] = parsed;
+            }
+            saveState();
+        }
+
+        function bulkAddNamaz(days) {
+            const keys = ['sobh', 'zohr', 'asr', 'maghreb', 'esha'];
+            keys.forEach(k => {
+                appState.namaz[k] = (appState.namaz[k] || 0) + days;
+            });
+            renderNamazUI();
+            saveState();
+            showToast(`تعداد ${days} روز به تمام ۵ نماز اضافه شد.`);
+        }
+
+        // --- ROOZEH & FETRIYEH LOGIC ---
+        function updateFetriyehCount(delta) {
+            const input = document.getElementById('fetriyeh-count');
+            if (!input) return;
+            let current = parseInt(input.value) || 1;
+            current = Math.max(1, current + delta);
+            input.value = current;
+            calculateFetriyeh();
+        }
+
+        function updateFetriyehRate(delta) {
+            const input = document.getElementById('fetriyeh-rate');
+            if (!input) return;
+            let current = parseInt(input.value) || 0;
+            current = Math.max(0, current + delta);
+            input.value = current;
+            calculateFetriyeh();
+        }
+
+        function calculateFetriyeh() {
+            const count = parseInt(document.getElementById('fetriyeh-count').value) || 0;
+            const rate = parseInt(document.getElementById('fetriyeh-rate').value) || 0;
+            const total = count * rate;
+            document.getElementById('fetriyeh-total-text').innerText = toPersianDigits(total.toLocaleString('fa-IR')) + ' تومان';
+            return { count, rate, total };
+        }
+
+        // --- iOS DATE PICKER FUNCTIONS ---
+        const PERSIAN_MONTHS = ['فروردین', 'اردیبهشت', 'خرداد', 'تیر', 'مرداد', 'شهریور', 'مهر', 'آبان', 'آذر', 'دی', 'بهمن', 'اسفند'];
+
+        function openIosDatePicker() {
+            populateIosDateWheels();
+            openModal('ios-date-modal');
+        }
+
+        function populateIosDateWheels() {
+            const daySelect = document.getElementById('ios-picker-day');
+            const monthSelect = document.getElementById('ios-picker-month');
+            const yearSelect = document.getElementById('ios-picker-year');
+
+            if (!daySelect || !monthSelect || !yearSelect) return;
+
+            // Extract parts from selected date
+            const parts = selectedFetriyehDate.split('/');
+            const curYear = parseInt(parts[0]) || 1405;
+            const curMonth = parseInt(parts[1]) || 12;
+            const curDay = parseInt(parts[2]) || 2;
+
+            // Populate Days (1..31)
+            daySelect.innerHTML = Array.from({length: 31}, (_, i) => i + 1).map(d => {
+                const val = String(d).padStart(2, '0');
+                return `<option value="${val}" ${d === curDay ? 'selected' : ''}>${toPersianDigits(val)}</option>`;
+            }).join('');
+
+            // Populate Months (1..12)
+            monthSelect.innerHTML = PERSIAN_MONTHS.map((mName, i) => {
+                const val = String(i + 1).padStart(2, '0');
+                return `<option value="${val}" ${(i + 1) === curMonth ? 'selected' : ''}>${mName}</option>`;
+            }).join('');
+
+            // Populate Years (1400..1412)
+            yearSelect.innerHTML = Array.from({length: 13}, (_, i) => 1400 + i).map(y => {
+                return `<option value="${y}" ${y === curYear ? 'selected' : ''}>${toPersianDigits(y)}</option>`;
+            }).join('');
+        }
+
+        function setIosPickerToday() {
+            selectedFetriyehDate = getTodayShamsiDate();
+            populateIosDateWheels();
+        }
+
+        function confirmIosDate() {
+            const day = document.getElementById('ios-picker-day').value;
+            const month = document.getElementById('ios-picker-month').value;
+            const year = document.getElementById('ios-picker-year').value;
+
+            selectedFetriyehDate = `${year}/${month}/${day}`;
+            document.getElementById('selected-payment-date').innerText = toPersianDigits(selectedFetriyehDate);
+            
+            closeModal('ios-date-modal');
+            showToast(`تاریخ پرداخت تنظیم شد: ${toPersianDigits(selectedFetriyehDate)}`);
+        }
+
+        function recordFetriyehPayment() {
+            const { count, rate, total } = calculateFetriyeh();
+            if (total <= 0) return;
+
+            const paymentDate = selectedFetriyehDate || getTodayShamsiDate();
+            const yearPart = paymentDate.split('/')[0] || '1405';
+            const randomCode = Math.floor(1000 + Math.random() * 9000);
+
+            const newRecord = {
+                id: Date.now(),
+                receiptNo: `FTR-${yearPart}-${randomCode}`,
+                year: toPersianDigits(yearPart),
+                count,
+                rate,
+                total,
+                date: paymentDate
+            };
+
+            appState.fetriyehHistory.unshift(newRecord);
+            saveState();
+            renderFetriyehHistory();
+            showToast('رسید تراکنش پرداخت فطریه با موفقیت صادر شد.');
+        }
+
+        function deleteFetriyehHistory(id) {
+            appState.fetriyehHistory = appState.fetriyehHistory.filter(item => item.id !== id);
+            saveState();
+            renderFetriyehHistory();
+            showToast('رسید تراکنش حذف شد.');
+        }
+
+        function renderFetriyehHistory() {
+            const container = document.getElementById('fetriyeh-history-list');
+            const badge = document.getElementById('receipt-count-badge');
+            if (!container) return;
+
+            if (badge) {
+                badge.innerText = `${toPersianDigits(appState.fetriyehHistory.length)} رسید ثبت‌شده`;
+            }
+
+            if (appState.fetriyehHistory.length === 0) {
+                container.innerHTML = `<div class="text-center py-8 bg-slate-50 dark:bg-slate-950/40 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800">
+                    <span class="text-3xl block mb-2">🧾</span>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">هیچ رسید پرداختی ثبت نشده است.</p>
+                </div>`;
+                return;
+            }
+
+            container.innerHTML = appState.fetriyehHistory.map(item => {
+                const formattedDate = toPersianDigits(item.date);
+                const formattedTotal = toPersianDigits(item.total.toLocaleString('fa-IR'));
+                const formattedRate = toPersianDigits(item.rate.toLocaleString('fa-IR'));
+                const formattedCount = toPersianDigits(item.count);
+
+                return `
+                    <div class="bg-white dark:bg-slate-900 border-2 border-amber-500/30 dark:border-amber-500/30 rounded-2xl shadow-md overflow-hidden transition-all hover:border-amber-500 relative group">
+                        <!-- Top Receipt Header Banner -->
+                        <div class="bg-gradient-to-r from-amber-500/15 via-amber-500/10 to-amber-500/15 dark:from-amber-500/20 dark:to-amber-500/20 px-4 py-2.5 border-b border-amber-500/20 flex justify-between items-center">
+                            <div class="flex items-center gap-2">
+                                <span class="text-lg">🧾</span>
+                                <span class="font-black text-amber-700 dark:text-amber-300 text-xs sm:text-sm">رسید پرداخت فطریه</span>
+                                <span class="text-[10px] bg-amber-500/20 text-amber-800 dark:text-amber-300 font-bold px-2 py-0.5 rounded-full border border-amber-500/30">سال ${item.year}</span>
+                            </div>
+                            <button onclick="deleteFetriyehHistory(${item.id})" title="حذف رسید" class="text-xs text-slate-400 hover:text-rose-500 bg-white dark:bg-slate-800 p-1.5 rounded-lg border border-slate-200 dark:border-slate-700 transition-colors">
+                                🗑️
+                            </button>
+                        </div>
+
+                        <!-- Ticket Body -->
+                        <div class="p-4 sm:p-5 space-y-3 relative">
+                            <!-- Ticket Notch Circles on Edges -->
+                            <div class="absolute -left-3 top-1/2 -translate-y-1/2 w-5 h-5 bg-slate-50 dark:bg-slate-950 rounded-full border border-amber-500/30 pointer-events-none"></div>
+                            <div class="absolute -right-3 top-1/2 -translate-y-1/2 w-5 h-5 bg-slate-50 dark:bg-slate-950 rounded-full border border-amber-500/30 pointer-events-none"></div>
+
+                            <!-- Details Grid -->
+                            <div class="grid grid-cols-2 gap-3 text-xs">
+                                <div class="bg-slate-50 dark:bg-slate-950/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
+                                    <span class="text-slate-500 dark:text-slate-400 block text-[10px] mb-0.5">📅 تاریخ پرداخت:</span>
+                                    <span class="font-bold text-slate-800 dark:text-slate-100 font-mono text-sm">${formattedDate}</span>
+                                </div>
+                                <div class="bg-slate-50 dark:bg-slate-950/80 p-2.5 rounded-xl border border-slate-200 dark:border-slate-800">
+                                    <span class="text-slate-500 dark:text-slate-400 block text-[10px] mb-0.5">🔖 شناسه رسید:</span>
+                                    <span class="font-bold text-amber-600 dark:text-amber-400 font-mono text-xs">${item.receiptNo || 'FTR-1405'}</span>
+                                </div>
+                            </div>
+
+                            <!-- Dashed Receipt Separator -->
+                            <div class="border-t-2 border-dashed border-amber-500/20 dark:border-amber-500/20 my-2"></div>
+
+                            <!-- Breakdown & Total Amount -->
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
+                                <div class="text-xs text-slate-600 dark:text-slate-300">
+                                    <span>تعداد: <strong class="text-slate-800 dark:text-slate-100">${formattedCount} نفر</strong></span>
+                                    <span class="mx-1 text-slate-300 dark:text-slate-700">|</span>
+                                    <span>سرانه: <strong class="text-slate-800 dark:text-slate-100">${formattedRate} تومان</strong></span>
+                                </div>
+                                <div class="bg-amber-500/10 dark:bg-amber-500/20 border border-amber-500/40 rounded-xl px-3 py-2 text-left sm:text-right flex items-center justify-between sm:justify-end gap-2">
+                                    <span class="text-[11px] text-amber-700 dark:text-amber-300 font-bold">مبلغ کل:</span>
+                                    <span class="text-base sm:text-lg font-black text-amber-600 dark:text-amber-400">${formattedTotal} تومان</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // --- ADIYEH LOGIC ---
+        function renderDuas() {
+            const container = document.getElementById('dua-cards-container');
+            if (!container) return;
+
+            if (appState.duas.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-6">هیچ دعایی اضافه نشده است. با دکمه بالا اولین دعا را اضافه کنید.</p>`;
+                return;
+            }
+
+            container.innerHTML = appState.duas.map(dua => `
+                <div class="rounded-2xl overflow-hidden border border-indigo-500/30 shadow-lg transition-all duration-200">
+                    <!-- Top Part: Arabic -->
+                    <div class="bg-indigo-950/90 p-4 sm:p-5 border-b border-indigo-500/20">
+                        <div class="flex justify-between items-start mb-3">
+                            <span class="text-xs font-bold text-indigo-300 bg-indigo-900/80 px-3 py-1 rounded-full border border-indigo-700/60 shadow-sm">
+                                ${dua.title}
+                            </span>
+                            <button onclick="deleteDua(${dua.id})" class="text-xs text-slate-400 hover:text-red-400 transition-colors bg-indigo-900/40 p-1.5 rounded-lg">
+                                🗑️ حذف
+                            </button>
+                        </div>
+                        <p class="text-lg sm:text-xl text-indigo-100 text-right leading-loose sm:leading-loose">
+                            ${dua.arabic}
+                        </p>
+                    </div>
+                    <!-- Bottom Part: Persian Translation -->
+                    <div class="bg-indigo-50/70 dark:bg-slate-900/95 p-4 sm:p-5">
+                        <p class="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                            ${dua.persian || '<span class="italic text-slate-400">بدون ترجمه</span>'}
+                        </p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function handleSaveDua(e) {
+            e.preventDefault();
+            const title = document.getElementById('dua-title').value.trim();
+            const arabic = document.getElementById('dua-arabic').value.trim();
+            const persian = document.getElementById('dua-persian').value.trim();
+
+            if (!title || !arabic) return;
+
+            const newDua = { id: Date.now(), title, arabic, persian };
+            appState.duas.unshift(newDua);
+            saveState();
+            renderDuas();
+            closeModal('dua-modal');
+            document.getElementById('dua-form').reset();
+            showToast('دعای جدید با موفقیت اضافه شد.');
+        }
+
+        function deleteDua(id) {
+            appState.duas = appState.duas.filter(d => d.id !== id);
+            saveState();
+            renderDuas();
+            showToast('دعا حذف شد.');
+        }
+
+        // --- AHKAM LOGIC ---
+        function renderAhkam() {
+            const container = document.getElementById('ahkam-cards-container');
+            if (!container) return;
+
+            if (appState.ahkam.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-500 italic text-center py-6">هیچ حکمی ثبت نشده است.</p>`;
+                return;
+            }
+
+            container.innerHTML = appState.ahkam.map(item => `
+                <div class="bg-slate-50 dark:bg-slate-950/80 border border-purple-500/20 hover:border-purple-500/40 rounded-xl p-4 transition-all shadow-sm">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="font-bold text-purple-700 dark:text-purple-300 text-sm sm:text-base">${item.title}</h4>
+                        <div class="flex gap-2">
+                            <button onclick="editAhkam(${item.id})" class="text-[11px] text-purple-600 dark:text-purple-400 hover:text-purple-700 bg-purple-500/10 px-2 py-1 rounded-lg">✏️ ویرایش</button>
+                            <button onclick="deleteAhkam(${item.id})" class="text-[11px] text-red-500 hover:text-red-400 bg-red-500/10 px-2 py-1 rounded-lg">🗑️</button>
+                        </div>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-700 dark:text-slate-300 leading-relaxed whitespace-pre-line">${item.content}</p>
+                </div>
+            `).join('');
+        }
+
+        function openAhkamModal(editId = null) {
+            document.getElementById('ahkam-form').reset();
+            document.getElementById('ahkam-id').value = '';
+            document.getElementById('ahkam-modal-title').innerText = 'ثبت حکم شرعی جدید';
+
+            if (editId) {
+                const item = appState.ahkam.find(a => a.id === editId);
+                if (item) {
+                    document.getElementById('ahkam-id').value = item.id;
+                    document.getElementById('ahkam-title').value = item.title;
+                    document.getElementById('ahkam-content').value = item.content;
+                    document.getElementById('ahkam-modal-title').innerText = 'ویرایش حکم شرعی';
+                }
+            }
+            openModal('ahkam-modal');
+        }
+
+        function handleSaveAhkam(e) {
+            e.preventDefault();
+            const id = document.getElementById('ahkam-id').value;
+            const title = document.getElementById('ahkam-title').value.trim();
+            const content = document.getElementById('ahkam-content').value.trim();
+
+            if (!title || !content) return;
+
+            if (id) {
+                const index = appState.ahkam.findIndex(a => a.id == id);
+                if (index !== -1) {
+                    appState.ahkam[index] = { ...appState.ahkam[index], title, content };
+                }
+            } else {
+                appState.ahkam.unshift({ id: Date.now(), title, content });
+            }
+
+            saveState();
+            renderAhkam();
+            closeModal('ahkam-modal');
+            showToast('اطلاعات حکم با موفقیت ذخیره شد.');
+        }
+
+        function editAhkam(id) {
+            openAhkamModal(id);
+        }
+
+        function deleteAhkam(id) {
+            appState.ahkam = appState.ahkam.filter(a => a.id !== id);
+            saveState();
+            renderAhkam();
+            showToast('مطلب حذف شد.');
+        }
+
+        // --- DASHBOARD STATS & HELPERS ---
+        function updateDashboardStats() {
+            const namazTotal = Object.values(appState.namaz).reduce((a, b) => a + b, 0);
+            document.getElementById('total-namaz-stat').innerText = namazTotal.toLocaleString('fa-IR');
+            document.getElementById('total-roozeh-stat').innerText = (appState.roozeh || 0).toLocaleString('fa-IR');
+        }
+
+        function promptResetAllData() {
+            openModal('reset-confirm-modal');
+        }
+
+        function executeResetAllData() {
+            appState = JSON.parse(JSON.stringify(DEFAULT_STATE));
+            saveState();
+            initApp();
+            closeModal('reset-confirm-modal');
+            closeModal('settings-modal');
+            showToast('تمامی اطلاعات برنامه با موفقیت پاکسازی و بازنشانی شدند.');
+        }
+
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            if (!modal) return;
+            const card = modal.firstElementChild;
+            modal.classList.remove('hidden');
+            if (card) {
+                card.classList.remove('animate-pop-out');
+                card.classList.add('animate-pop-in');
+            }
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            if (!modal) return;
+            const card = modal.firstElementChild;
+            if (card) {
+                card.classList.remove('animate-pop-in');
+                card.classList.add('animate-pop-out');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    card.classList.remove('animate-pop-out');
+                }, 350);
+            } else {
+                modal.classList.add('hidden');
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').innerText = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // --- BACKUP & RESTORE ---
+        function exportData() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", `ebadat_backup_${new Date().toISOString().slice(0,10)}.json`);
+            dlAnchorElem.click();
+            showToast('فایل پشتیبان دانلود شد.');
+        }
+
+        function importData(event) {
+            const fileReader = new FileReader();
+            fileReader.onload = function(e) {
+                try {
+                    const parsed = JSON.parse(e.target.result);
+                    if (parsed && parsed.namaz) {
+                        appState = parsed;
+                        saveState();
+                        initApp();
+                        showToast('اطلاعات با موفقیت بازیابی شدند.');
+                    } else {
+                        showToast('فایل وارد شده معتبر نیست.');
+                    }
+                } catch (err) {
+                    showToast('خطا در خواندن فایل.');
+                }
+            };
+            fileReader.readAsText(event.target.files[0]);
+        }
+
+        // --- APP INIT ---
+        function initApp() {
+            applyTheme();
+            renderNamazUI();
+            document.getElementById('input-roozeh').value = appState.roozeh || 0;
+            document.getElementById('selected-payment-date').innerText = toPersianDigits(selectedFetriyehDate);
+            calculateFetriyeh();
+            renderFetriyehHistory();
+            renderDuas();
+            renderAhkam();
+            updateDashboardStats();
+            initSwipeBackGesture();
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
